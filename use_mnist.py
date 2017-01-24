@@ -1,14 +1,19 @@
 from keras.models import load_model
-from keras.datasets import mnist
+from scipy import misc
 
 model = load_model('model/mnist.h5')
-
 img_rows, img_cols = 28, 28
 
-(X_train, y_train), (X_test, y_test) = mnist.load_data()
-X_train = X_train[10].reshape(1, img_rows, img_cols, 1)
-X_train = X_train.astype('float32')
 
-score = model.predict_classes(X_train)
+def recognize_image(data):
+    image_file = "image.png"
+    with open(image_file, 'w') as fh:
+        fh.write(data)
 
-print(score[0])
+    face = misc.imread(image_file, flatten=True, mode='L')
+    for i in xrange(28):
+        for j in xrange(28):
+            face[i][j] = 255 - face[i][j]
+    image = face.reshape(1, img_rows, img_cols, 1)
+    image = image.astype('float32')
+    return model.predict_classes(image)
