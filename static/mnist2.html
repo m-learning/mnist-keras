@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+<body>
+<script type="text/javascript" charset="utf-8">
+
+    $(document).ready(function () {
+
+        //Canvas
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = "#000000";
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        //Variables
+        var canvasx = $(canvas).offset().left;
+        var canvasy = $(canvas).offset().top;
+        var last_mousex = last_mousey = 0;
+        var mousex = mousey = 0;
+        var mousedown = false;
+        var tooltype = 'draw';
+
+        //Mousedown
+        $(canvas).on('mousedown', function (e) {
+            last_mousex = mousex = parseInt(e.clientX - canvasx);
+            last_mousey = mousey = parseInt(e.clientY - canvasy);
+            mousedown = true;
+        });
+
+        //Mouseup
+        $(canvas).on('mouseup', function (e) {
+            mousedown = false;
+        });
+
+        //Mousemove
+        $(canvas).on('mousemove', function (e) {
+            mousex = parseInt(e.clientX - canvasx);
+            mousey = parseInt(e.clientY - canvasy);
+            if (mousedown) {
+                ctx.beginPath();
+                if (tooltype == 'draw') {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.strokeStyle = 'white';
+                    ctx.lineWidth = 20;
+                } else {
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.lineWidth = 20;
+                }
+                ctx.moveTo(last_mousex, last_mousey);
+                ctx.lineTo(mousex, mousey);
+                ctx.lineJoin = ctx.lineCap = 'round';
+                ctx.stroke();
+            }
+            last_mousex = mousex;
+            last_mousey = mousey;
+        });
+
+        $('#clear').click(function (e) {
+            ctx.fillStyle = "#000000";
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            $('#answer').text('');
+        });
+
+        $('#predicate').click(function (e) {
+            $('#answer').text('');
+            $('#answer').addClass('loader');
+            canvas.toBlob(function (blob) {
+                var xhr = new XMLHttpRequest()
+                xhr.open('POST', 'mnist', true)
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        document.getElementById('result').innerHTML = xhr.responseText;
+                    }
+                };
+                xhr.send(blob)
+            });
+        });
+
+    });
+
+</script>
+<canvas id="canvas" width="420" height="420"></canvas>
+<button id="predicate"> >></button>
+<button id="clear"> X</button>
+<div id="result"></div>
+</body>
+</html>

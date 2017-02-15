@@ -2,19 +2,20 @@ import os
 
 from flask import Flask, request
 
-from use_mnist import recognize_image
+from use_models import recognize_image
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='')
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/mnist', methods=['POST'])
 def hello_world():
-    if request.method == 'POST':
-        score = recognize_image(request.data)
-        print score
-        return str(score[0])
-    else:
-        return app.send_static_file('index.html')
+    score = recognize_image(request.data)
+    return str(score[0])
+
+
+@app.route('/', methods=['GET'])
+def index():
+    return app.send_static_file('index.html')
 
 
 if __name__ == '__main__':
